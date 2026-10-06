@@ -9,8 +9,8 @@ import sublime
 import os
 import json
 
-from FavoriteFiles.lib.file_strip.json import sanitize_json
-from FavoriteFiles.lib.notify import error
+from .lib.file_strip.json import sanitize_json
+from .lib.notify import error
 
 FAVORITE_LIST_VERSION = 1
 

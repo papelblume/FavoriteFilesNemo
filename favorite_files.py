@@ -1,5 +1,7 @@
 """
-Favorite Files.
+Favorite Files (Nemo).
+
+A fork of FavoriteFiles that also lists the files favorited in Nemo (the same set xed shows).
 
 Licensed under MIT
 Copyright (c) 2012 - 2015 Isaac Muse <isaacmuse@gmail.com>
@@ -8,13 +10,55 @@ Copyright (c) 2012 - 2015 Isaac Muse <isaacmuse@gmail.com>
 import sublime
 import sublime_plugin
 import os
-from FavoriteFiles.favorites import Favorites
-from FavoriteFiles.lib.notify import error
+from . import nemo_favorites
+from .favorites import Favorites
+from .lib.notify import error, settings
 
 Favs = None
 
+# QuickPanelItem (with annotations) exists on ST4; fall back to plain lists on ST3.
+HAS_PANEL_ITEMS = hasattr(sublime, "QuickPanelItem")
 
-class FavoriteFilesCleanOrphansCommand(sublime_plugin.WindowCommand):
+
+def panel_item(name, detail, annotation=""):
+    """Build a quick panel row."""
+
+    if HAS_PANEL_ITEMS:
+        return sublime.QuickPanelItem(name, detail, annotation)
+    return [name + ("  [%s]" % annotation if annotation else ""), detail]
+
+
+def nemo_files(exclude=()):
+    """
+    Return Nemo favorites as ``[name, path]`` rows, minus anything in ``exclude``.
+
+    Never raises: problems are logged to the console so the regular favorites still work.
+    """
+
+    cfg = settings()
+    if not cfg.get("nemo_favorites", True):
+        return []
+
+    try:
+        entries = nemo_favorites.get_favorites(
+            mime_types=cfg.get("nemo_favorites_mime_types", nemo_favorites.DEFAULT_MIME_TYPES)
+        )
+    except Exception as e:  # never let a Nemo problem break the regular list
+        print("FavoriteFilesNemo: failed to read Nemo favorites: %s" % e)
+        return []
+
+    if entries is None:
+        print(
+            "FavoriteFilesNemo: could not read Nemo favorites "
+            "(is 'gsettings' available and is libxapp installed?)"
+        )
+        return []
+
+    exclude = set(exclude)
+    return [[name, path] for name, path in entries if path not in exclude]
+
+
+class FavoriteFilesNemoCleanOrphansCommand(sublime_plugin.WindowCommand):
     """Clean out favorites that no longer exist."""
 
     def run(self):
@@ -25,7 +69,7 @@ class FavoriteFilesCleanOrphansCommand(sublime_plugin.WindowCommand):
             Favs.load(force=True, clean=True, win_id=self.window.id())
 
 
-class FavoriteFilesEditAliasCommand(sublime_plugin.WindowCommand):
+class FavoriteFilesNemoEditAliasCommand(sublime_plugin.WindowCommand):
     """Open the selected favorite(s)."""
 
     def edit_alias(self, value, group=False):
@@ -84,7 +128,7 @@ class FavoriteFilesEditAliasCommand(sublime_plugin.WindowCommand):
                 error("No favorites found! Try adding some.")
 
 
-class FavoriteFilesOpenCommand(sublime_plugin.WindowCommand):
+class FavoriteFilesNemoOpenCommand(sublime_plugin.WindowCommand):
     """Open the selected favorite(s)."""
 
     def open_file(self, value, group=False):
@@ -138,34 +182,50 @@ class FavoriteFilesOpenCommand(sublime_plugin.WindowCommand):
                 self.num_files = len(self.files)
                 self.groups = []
                 self.num_groups = 0
+                self.nemo_paths = set()
 
                 # Show files in group
                 if self.num_files:
                     self.window.show_quick_panel(
-                        [["Open Group", ""]] + self.files,
+                        [panel_item("Open Group", "")] + self.file_rows(),
                         lambda x: self.open_file(x, group=True)
                     )
                 else:
                     error("No favorites found! Try adding some.")
 
+    def file_rows(self):
+        """Quick panel rows for the current files; Nemo favorites get a 'Nemo' annotation."""
+
+        return [
+            panel_item(name, path, "Nemo" if path in self.nemo_paths else "")
+            for name, path in self.files
+        ]
+
     def run(self):
         """Run the command."""
 
-        if not Favs.load(win_id=self.window.id()):
-            self.files = Favs.all_files()
-            self.num_files = len(self.files)
-            self.groups = Favs.all_groups()
-            self.num_groups = len(self.groups)
-            if self.num_files + self.num_groups > 0:
-                self.window.show_quick_panel(
-                    self.files + self.groups,
-                    self.open_file
-                )
-            else:
-                error("No favorites found! Try adding some.")
+        # A broken/missing favorites list is already reported by load(); the Nemo
+        # favorites are independent of it, so still offer those.
+        failed = Favs.load(win_id=self.window.id())
+        own_files = [] if failed else Favs.all_files()
+        self.groups = [] if failed else Favs.all_groups()
+
+        nemo = nemo_files(exclude=[path for _, path in own_files])
+        self.nemo_paths = set(path for _, path in nemo)
+        self.files = own_files + nemo
+        self.num_files = len(self.files)
+        self.num_groups = len(self.groups)
+
+        if self.num_files + self.num_groups > 0:
+            self.window.show_quick_panel(
+                self.file_rows() + [panel_item(name, detail) for name, detail in self.groups],
+                self.open_file
+            )
+        else:
+            error("No favorites found! Try adding some in Sublime Text or Nemo.")
 
 
-class FavoriteFilesAddCommand(sublime_plugin.WindowCommand):
+class FavoriteFilesNemoAddCommand(sublime_plugin.WindowCommand):
     """Add favorite(s) to the global group or the specified group."""
 
     def prompt_for_alias(self, name, group_name=None):
@@ -386,7 +446,7 @@ class FavoriteFilesAddCommand(sublime_plugin.WindowCommand):
                     self.group_prompt()
 
 
-class FavoriteFilesRemoveCommand(sublime_plugin.WindowCommand):
+class FavoriteFilesNemoRemoveCommand(sublime_plugin.WindowCommand):
     """Remove the file favorites from the tracked list."""
 
     def remove(self, value, group=False, group_name=None):
@@ -451,7 +511,7 @@ class FavoriteFilesRemoveCommand(sublime_plugin.WindowCommand):
                 error("No favorites to remove!")
 
 
-class FavoriteFilesTogglePerProjectCommand(sublime_plugin.WindowCommand):
+class FavoriteFilesNemoTogglePerProjectCommand(sublime_plugin.WindowCommand):
     """Toggle per project favorites."""
 
     def run(self):
@@ -474,23 +534,9 @@ class FavoriteFilesTogglePerProjectCommand(sublime_plugin.WindowCommand):
         return settings().get("enable_per_projects", False)
 
 
-def check_st_version():
-    """Check the Sublime version."""
-
-    if int(sublime.version()) < 3080:
-        window = sublime.active_window()
-        if window is not None:
-            window.run_command('open_file', {"file": "${packages}/FavoriteFiles/messages/upgrade-st-3080.md"})
-
-
-def settings():
-    """Return settings file."""
-    return sublime.load_settings("favorite_files.sublime-settings")
-
-
 def plugin_loaded():
     """Setup plugin."""
 
     global Favs
+    # Same list file as the original FavoriteFiles package, so existing favorites carry over.
     Favs = Favorites(os.path.join(sublime.packages_path(), 'User', 'favorite_files_list.json'))
-    check_st_version()

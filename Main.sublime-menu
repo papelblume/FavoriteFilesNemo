@@ -5,20 +5,20 @@
         [
             { "caption": "-" },
             {
-                "caption": "Favorite Files",
+                "caption": "Favorite Files (Nemo)",
                 "children":
                 [
                     {
                         "caption": "Add to Favorite Files",
-                        "command": "favorite_files_add"
+                        "command": "favorite_files_nemo_add"
                     },
                     {
                         "caption": "Open Favorite File(s)",
-                        "command": "favorite_files_open"
+                        "command": "favorite_files_nemo_open"
                     },
                     {
                         "caption": "Remove Favorite File(s)",
-                        "command": "favorite_files_remove"
+                        "command": "favorite_files_nemo_remove"
                     }
                 ]
             }
@@ -35,49 +35,23 @@
                 "children":
                 [
                     {
-                        "caption": "FavoriteFiles",
+                        "caption": "FavoriteFilesNemo",
                         "children":
                         [
-                            // FavoriteFiles settings
                             {
                                 "command": "edit_settings", "args": {
-                                    "base_file": "${packages}/FavoriteFiles/favorite_files.sublime-settings",
+                                    "base_file": "${packages}/FavoriteFilesNemo/favorite_files_nemo.sublime-settings",
                                     "default": "{\n$0\n}\n"
                                 },
                                 "caption": "Settings"
                             },
                             { "caption": "-" },
-                            // FavoriteFiles global file list
                             {
                                 "command": "open_file", "args":
                                 {
                                     "file": "${packages}/User/favorite_files_list.json"
                                 },
                                 "caption": "Global Favorite List"
-                            },
-                            { "caption": "-" },
-                            {
-                                "caption": "Changelog",
-                                "command": "favorite_files_changes"
-                            },
-                            {
-                                "caption": "Documentation",
-                                "command": "favorite_files_open_site",
-                                "args": {
-                                    "url": "http://facelessuser.github.io/FavoriteFiles/"
-                                }
-                            },
-                            { "caption": "-" },
-                            {
-                                "caption": "Support Info",
-                                "command": "favorite_files_support_info"
-                            },
-                            {
-                                "caption": "Issues",
-                                "command": "favorite_files_open_site",
-                                "args": {
-                                    "url": "https://github.com/facelessuser/FavoriteFiles/issues"
-                                }
                             }
                         ]
                     }

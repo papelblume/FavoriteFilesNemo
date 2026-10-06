@@ -1,0 +1,27 @@
+name: tests
+
+on:
+  push:
+    branches:
+      - 'master'
+  pull_request:
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    - name: Install gsettings and MIME database
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libglib2.0-bin shared-mime-info
+    - name: Tests
+      # The tests import the package by its folder name, which is the repository name.
+      working-directory: ${{ github.workspace }}/..
+      run: |
+        python -m unittest FavoriteFilesNemo.tests.test_nemo_favorites FavoriteFilesNemo.tests.test_integration -v

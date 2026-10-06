@@ -1,38 +1,28 @@
 """
-Favorite Files SubNotify support.
+Favorite Files (Nemo) notifications.
 
 Licensed under MIT
 Copyright (c) 2012 - 2015 Isaac Muse <isaacmuse@gmail.com>
 """
 import sublime
-try:
-    from SubNotify.sub_notify import SubNotifyIsReadyCommand as Notify
-except Exception:
-    class Notify(object):
-        """Notify fallback class."""
 
-        @classmethod
-        def is_ready(cls):
-            """Return false to disable SubNotify support."""
+SETTINGS_FILE = "favorite_files_nemo.sublime-settings"
+TITLE = "FavoriteFilesNemo"
 
-            return False
+
+def settings():
+    """Return the plugin settings."""
+
+    return sublime.load_settings(SETTINGS_FILE)
 
 
 def notify(msg):
-    """Notify message."""
+    """Show a non-blocking status bar message."""
 
-    settings = sublime.load_settings("favorite_files.sublime-settings")
-    if settings.get("use_sub_notify", False) and Notify.is_ready():
-        sublime.run_command("sub_notify", {"title": "FavoriteFiles", "msg": msg})
-    else:
-        sublime.status_message(msg)
+    sublime.status_message("%s: %s" % (TITLE, msg))
 
 
 def error(msg):
-    """Error message."""
+    """Show an error dialog."""
 
-    settings = sublime.load_settings("favorite_files.sublime-settings")
-    if settings.get("use_sub_notify", False) and Notify.is_ready():
-        sublime.run_command("sub_notify", {"title": "FavoriteFiles", "msg": msg, "level": "error"})
-    else:
-        sublime.error_message("FavoriteFiles:\n%s" % msg)
+    sublime.error_message("%s:\n%s" % (TITLE, msg))

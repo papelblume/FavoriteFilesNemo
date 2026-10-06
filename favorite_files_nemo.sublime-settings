@@ -1,0 +1,19 @@
+{
+    // Include files favorited in Nemo (right-click a file in Nemo -> "Add to Favorites").
+    // They appear in "Open File(s)" tagged "Nemo"; manage them in Nemo itself.
+    "nemo_favorites": true,
+
+    // Only Nemo favorites whose MIME type is a kind of one of these are shown.
+    // The default is exactly what xed uses: "text/plain" also covers markdown, shell
+    // scripts, python, json, yaml, etc. as declared by shared-mime-info.
+    // Use [] to show every favorited file, regardless of type.
+    "nemo_favorites_mime_types": ["text/plain"],
+
+    // Enable ability for per project favorites.
+    // Per Projects must be toggled on for each project you are in.
+    // You can toggle back and forth between per project and global favorites.
+    "enable_per_projects": true,
+
+    // Prompt for a file alias every time you add a single file.
+    "always_ask_alias": false
+}

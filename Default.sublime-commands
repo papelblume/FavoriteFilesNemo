@@ -1,26 +1,26 @@
 [
     {
-        "caption": "Favorite Files: Open File(s)",
-        "command": "favorite_files_open"
+        "caption": "Favorite Files (Nemo): Open File(s)",
+        "command": "favorite_files_nemo_open"
     },
     {
-        "caption": "Favorite Files: Add File(s)",
-        "command": "favorite_files_add"
+        "caption": "Favorite Files (Nemo): Add File(s)",
+        "command": "favorite_files_nemo_add"
     },
     {
-        "caption": "Favorite Files: Remove File(s)",
-        "command": "favorite_files_remove"
+        "caption": "Favorite Files (Nemo): Remove File(s)",
+        "command": "favorite_files_nemo_remove"
     },
     {
-        "caption": "Favorite Files: Edit File Alias",
-        "command": "favorite_files_edit_alias"
+        "caption": "Favorite Files (Nemo): Edit File Alias",
+        "command": "favorite_files_nemo_edit_alias"
     },
     {
-        "caption": "Favorite Files: Clean Orphaned Favorites",
-        "command": "favorite_files_clean_orphans"
+        "caption": "Favorite Files (Nemo): Clean Orphaned Favorites",
+        "command": "favorite_files_nemo_clean_orphans"
     },
     {
-        "caption": "Favorite Files: Toggle Per Project",
-        "command": "favorite_files_toggle_per_project"
+        "caption": "Favorite Files (Nemo): Toggle Per Project",
+        "command": "favorite_files_nemo_toggle_per_project"
     }
 ]
